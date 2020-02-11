@@ -1,25 +1,47 @@
 module Main exposing (..)
 
 import Browser
-import Html exposing (Html, button, div, text)
-import Html.Events exposing (onClick)
+import Html exposing (Html, div, text, input)
+import Html.Attributes exposing (..)
+import Html.Events exposing (onInput, onClick)
 
 main =
-  Browser.sandbox { init = 0, update = update, view = view }
+  Browser.sandbox { init = init, update = update, view = view }
 
-type Msg = Increment | Decrement
+-- MODEL
 
+type alias Model =
+    { todoList: List String
+    , newToDo: String
+    }
+
+init : Model
+init =
+    Model [] ""
+
+type Msg =
+    AddCard |
+    Change String
+
+-- UPDATE
+
+update: Msg -> Model -> Model
 update msg model =
   case msg of
-    Increment ->
-      model + 1
+    AddCard ->
+        { model | todoList = List.reverse (model.newToDo :: List.reverse model.todoList)
+         , newToDo = ""
+        }
+    Change newToDo ->
+        { model | newToDo = newToDo}
 
-    Decrement ->
-      model - 1
 
+-- VIEW
+
+view : Model -> Html Msg
 view model =
   div []
-    [ button [ onClick Decrement ] [ text "-" ]
-    , div [] [ text (String.fromInt model) ]
-    , button [ onClick Increment ] [ text "+" ]
+    [ div [] (List.map (\l -> div [] [ text l ]) model.todoList)
+    , input [ type_ "textarea", placeholder "このカードにタイトルを入力", value model.newToDo, onInput Change] []
+    , input [ type_ "submit", value "カードを追加", onClick AddCard] []
     ]

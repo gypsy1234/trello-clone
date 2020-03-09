@@ -58,15 +58,15 @@ update msg model =
     DragOver ->
         model
 
-    Drop toId->
+    Drop toIndex ->
         case model.beingDragged of
             Nothing ->
                 model
 
-            Just fromId ->
+            Just fromIndex ->
                 { model
                     | beingDragged = Nothing
-                    , todoArray = case (moveItem fromId toId model.todoArray) of
+                    , todoArray = case (moveItem fromIndex toIndex model.todoArray) of
                         Ok array -> array
                         Err _ -> model.todoArray
                 }

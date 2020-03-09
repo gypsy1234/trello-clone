@@ -1,11 +1,11 @@
 module Main exposing (..)
 
+import Array exposing (Array)
 import Browser exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Json.Decode as Decode
 import Html.Events as Events
-import Array
 
 main =
   Browser.sandbox
@@ -17,33 +17,27 @@ main =
 -- MODEL
 
 type alias Model =
-    { todoList: List ToDo
+    { todoArray: Array ToDo
     , newToDo: String
-    , beingDragged: Maybe ToDo
-    , nextId: Int
+    , beingDragged: Maybe Int
     }
 
 type alias ToDo =
-    { id: ToDoId
-    , value: ToDoValue
-    }
-
-type alias ToDoId =
-    { value: Int }
+    { value: ToDoValue }
 
 type alias ToDoValue =
     { value: String }
 
 init : Model
-init = Model [] "" Nothing 0
+init = Model Array.empty "" Nothing
 
 
 type Msg =
     AddCard
     | Change String
-    | Drag ToDo
+    | Drag Int
     | DragOver
-    | Drop ToDo
+    | Drop Int
 
 -- UPDATE
 
@@ -51,16 +45,15 @@ update: Msg -> Model -> Model
 update msg model =
   case msg of
     AddCard ->
-         { model | todoList = List.reverse ( { id = ToDoId model.nextId, value = ToDoValue model.newToDo } :: List.reverse model.todoList)
+         { model | todoArray = Array.push (ToDo <| ToDoValue model.newToDo) model.todoArray
                  , newToDo = ""
-                 , nextId = model.nextId + 1
           }
 
     Change newToDo ->
         { model | newToDo = newToDo}
 
-    Drag toDo ->
-        { model | beingDragged = Just toDo }
+    Drag index ->
+        { model | beingDragged = Just index }
 
     DragOver ->
         model
@@ -73,44 +66,36 @@ update msg model =
             Just fromId ->
                 { model
                     | beingDragged = Nothing
-                    , todoList = moveItem fromId toId model.todoList
+                    , todoArray = case (moveItem fromId toId model.todoArray) of
+                        Ok array -> array
+                        Err _ -> model.todoArray
                 }
 
-getIndex : a -> Int -> List a -> Maybe Int
-getIndex target start list =
-     case list of
-        [] ->
-            Nothing
-        head :: tail ->
-            if head == target then Just start
-            else getIndex target (start + 1) tail
-
-
-moveItem : ToDo -> ToDo -> List ToDo -> List ToDo
-moveItem from to list =
+moveItem : Int -> Int -> Array item -> Result String (Array item)
+moveItem fromIndex toIndex array =
     let
-         maybeFromIndex =
-             getIndex from 0 list
-         maybeToIndex =
-              getIndex to 0 list
          draggedDown =
-             case (maybeFromIndex, maybeToIndex) of
-                 (Just fromIndex, Just toIndex) -> fromIndex < toIndex
-                 (_, _) -> True
+            fromIndex < toIndex
+         maybeFromItem =
+            Array.get fromIndex array
+
+         move from =
+              List.foldr (\(index, todo) acc ->
+                  if index == toIndex && draggedDown then todo :: from :: acc
+                  else if index == toIndex then from :: todo :: acc
+                  else if index == fromIndex then acc
+                  else todo :: acc
+                  ) [] (Array.toIndexedList array)
+              |> Array.fromList
     in
-        List.foldr (\todo acc ->
-            if todo == to && draggedDown then to :: from :: acc
-            else if todo == to then from :: to :: acc
-            else if todo == from then acc
-            else todo :: acc
-            ) [] list
+        Result.fromMaybe "error" <| Maybe.map move maybeFromItem
 
 -- VIEW
 
 view : Model -> Html Msg
 view model =
   div []
-    [ div [] (List.map (\todo -> div [ draggable "true", Drag todo |> onDragStart, Drop todo |> onDrop, onDragOver DragOver ] [ text todo.value.value ]) model.todoList)
+    [ div [] (List.map (\(index, todo) -> div [ draggable "true", Drag index |> onDragStart, Drop index |> onDrop, onDragOver DragOver ] [ text todo.value.value ]) <| Array.toIndexedList model.todoArray)
     , input [ type_ "textarea", placeholder "このカードにタイトルを入力", value model.newToDo, Events.onInput Change] []
     , input [ type_ "submit", value "カードを追加", Events.onClick AddCard] []
     ]

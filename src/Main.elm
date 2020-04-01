@@ -17,11 +17,11 @@ main =
 -- MODEL
 
 type alias Model =
-    { listArray: Array ToDoList
+    { listArray: Array CardList
     , beingDragged: Maybe (Int, Int)
     }
 
-type alias ToDoList =
+type alias CardList =
     { value: Array ToDo
     , newToDo: String
     }
@@ -51,7 +51,7 @@ update msg model =
   case msg of
     AddList ->
         { model | listArray =
-           Array.push (ToDoList Array.empty "") model.listArray
+           Array.push (CardList Array.empty "") model.listArray
         }
 
     AddCard listIndex ->
@@ -60,7 +60,7 @@ update msg model =
                 Nothing ->
                     model.listArray
                 Just list ->
-                    Array.set listIndex (ToDoList (Array.push (ToDo <| ToDoValue list.newToDo) list.value) "") model.listArray
+                    Array.set listIndex (CardList (Array.push (ToDo <| ToDoValue list.newToDo) list.value) "") model.listArray
           }
 
     Change listIndex newToDo ->
@@ -69,7 +69,7 @@ update msg model =
                 Nothing ->
                     model.listArray
                 Just list ->
-                    Array.set listIndex (ToDoList list.value newToDo) model.listArray
+                    Array.set listIndex (CardList list.value newToDo) model.listArray
 
         }
 
@@ -97,7 +97,7 @@ update msg model =
                                 Just list ->
                                     case (moveItem fromToDoIndex toToDoIndex list.value) of
                                         Ok array ->
-                                            Array.set fromListIndex (ToDoList array "") model.listArray
+                                            Array.set fromListIndex (CardList array "") model.listArray
                                         Err _ ->
                                             model.listArray
                     }
@@ -134,8 +134,8 @@ todoListView : Model -> Int -> Html Msg
 todoListView model listIndex =
   div []
     [ div [] (List.map (\(index, todo) -> div [ draggable "true", Drag listIndex index |> onDragStart, Drop listIndex index |> onDrop, onDragOver DragOver ] [ text todo.value.value ])
-        <| Array.toIndexedList <| (\list -> list.value) <| Maybe.withDefault (ToDoList Array.empty "") <| Array.get listIndex model.listArray)
-    , input [ type_ "textarea", placeholder "このカードにタイトルを入力", value <| (\list -> list.newToDo) <| Maybe.withDefault (ToDoList Array.empty "") <| Array.get listIndex model.listArray
+        <| Array.toIndexedList <| (\list -> list.value) <| Maybe.withDefault (CardList Array.empty "") <| Array.get listIndex model.listArray)
+    , input [ type_ "textarea", placeholder "このカードにタイトルを入力", value <| (\list -> list.newToDo) <| Maybe.withDefault (CardList Array.empty "") <| Array.get listIndex model.listArray
         , Events.onInput (Change listIndex)] []
     , input [ type_ "submit", value "カードを追加", Events.onClick (AddCard listIndex)] []
     ]

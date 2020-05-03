@@ -383,50 +383,64 @@ cardsDecoder =
 
 -- VIEW
 
-
 view : Model -> Html Msg
 view model =
     div []
-        [ div [] (List.map (viewCardList model) <| Array.toList model.listArray)
-        , div []
-            [ input
-                [ type_ "textarea"
-                , placeholder "リストのタイトルを入力してください"
-                , value model.typingListTitle
-                , Events.onInput ChangeListTitle
-                ]
-                []
-            , input [ type_ "submit", value "リストを追加", Events.onClick AddList ] []
-            ]
+        [ div [ class "columns" ] <|
+            Array.toList <|
+                Array.push (listInputForm model) <|
+                    Array.fromList (List.map (viewCardList model) <| Array.toList model.listArray)
         ]
 
 
 viewCardList : Model -> CardList -> Html Msg
 viewCardList model cardList =
-    div [ draggable "true" ]
+    div [ class "column is-one-fifth" ]
         [ div []
-            [ div []
-                (List.map (\list -> viewCard list) <|
-                    Array.toList <|
-                        Maybe.withDefault Array.empty <|
-                            Dict.get cardList.id.value.value model.listIdToCardList
-                )
-            , textarea [ value cardList.title.value ] []
-            , input
-                [ type_ "textarea"
-                , placeholder "カードのタイトルを入力してください"
-                , value model.typingCardTitle
-                , Events.onInput ChangeCardTitle
+            [ div [ class "card" ]
+                [ div [ class "card-header" ] [ p [ class "card-header-title" ] [ text cardList.title.value ] ]
+                , div []
+                    (List.map (\list -> viewCard list) <|
+                        Array.toList <|
+                            Maybe.withDefault Array.empty <|
+                                Dict.get cardList.id.value.value model.listIdToCardList
+                    )
+                , div [ class "field" ]
+                    [ div [ class "control card-content" ]
+                        [ input
+                            [ class "input"
+                            , type_ "text"
+                            , placeholder "カードのタイトルを入力してください"
+                            , value model.typingCardTitle
+                            , Events.onInput ChangeCardTitle
+                            ]
+                            []
+                        ]
+                    , div [class "card-content"] [ input [ class "button is-small", type_ "submit", value "カードを追加", Events.onClick (AddCard cardList.id) ] [] ]
+                    ]
                 ]
-                []
-            , input [ type_ "submit", value "カードを追加", Events.onClick (AddCard cardList.id) ] []
             ]
         ]
 
 
 viewCard : Card -> Html msg
 viewCard card =
-    textarea [ value card.title.value ] []
+    div [ class "card-content" ] [ text card.title.value ]
+
+
+listInputForm : Model -> Html Msg
+listInputForm model =
+    div [ class "column" ]
+        [ input
+            [ class "input"
+            , type_ "text"
+            , placeholder "リストのタイトルを入力してください"
+            , value model.typingListTitle
+            , Events.onInput ChangeListTitle
+            ]
+            []
+        , input [ class "button is-small", type_ "submit", value "リストを追加", Events.onClick AddList ] []
+        ]
 
 
 

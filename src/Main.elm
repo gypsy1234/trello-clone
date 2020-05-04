@@ -9,6 +9,8 @@ import Html.Events as Events
 import Http exposing (Error(..), Expect, expectJson, expectStringResponse)
 import Json.Decode as Decode exposing (map2)
 import Json.Encode as Encode
+import Svg exposing (Svg, svg)
+import Svg.Attributes as SvgAttributes exposing (d, fill, viewBox)
 
 
 main : Program () Model Msg
@@ -39,6 +41,7 @@ type alias Model =
     , beingDragged : Maybe ( Int, Int )
     , typingListTitle : String
     , typingCardTitle : String
+    , maybeAddCardOpenedListId : Maybe CardListId
     }
 
 
@@ -73,7 +76,7 @@ type alias CardTitle =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( Model Array.empty Dict.empty Nothing "" ""
+    ( Model Array.empty Dict.empty Nothing "" "" Nothing
     , Cmd.batch
         [ Http.get
             { url = "http://localhost:9000/v1/card-lists"
@@ -120,6 +123,7 @@ type Msg
     | GetCardResource ResourceLocation
     | GotCard Card
     | GotCards (List Card)
+    | OnClickAddCard CardListId
     | DoNothing
 
 
@@ -283,6 +287,14 @@ update msg model =
             , Cmd.none
             )
 
+        OnClickAddCard listId ->
+            ( { model
+                | maybeAddCardOpenedListId =
+                    Just listId
+              }
+            , Cmd.none
+            )
+
         DoNothing ->
             ( model
             , Cmd.none
@@ -406,19 +418,16 @@ viewCardList model cardList =
                             Maybe.withDefault Array.empty <|
                                 Dict.get cardList.id.value.value model.listIdToCardList
                     )
-                , div [ class "field" ]
-                    [ div [ class "control card-content" ]
-                        [ input
-                            [ class "input"
-                            , type_ "text"
-                            , placeholder "Add a Card"
-                            , value model.typingCardTitle
-                            , Events.onInput ChangeCardTitle
-                            ]
-                            []
-                        ]
-                    , div [ class "card-content" ] [ input [ class "button is-small", style "background-color" "#5aac44", style "color" "#FFF", type_ "submit", value "Add Card", Events.onClick (AddCard cardList.id) ] [] ]
-                    ]
+                , case model.maybeAddCardOpenedListId of
+                    Just id ->
+                        if id == cardList.id then
+                            viewAddCard model cardList
+
+                        else
+                            viewListFooter cardList
+
+                    Nothing ->
+                        viewListFooter cardList
                 ]
             ]
         ]
@@ -426,7 +435,36 @@ viewCardList model cardList =
 
 viewCard : Card -> Html msg
 viewCard card =
-    div [ class "card-content"] [ text card.title.value ]
+    div [ class "card-content" ] [ text card.title.value ]
+
+
+viewListFooter : CardList -> Html Msg
+viewListFooter cardList =
+    div [ class "card-footer button", Events.onClick <| OnClickAddCard cardList.id ]
+        [ div [ class "card-footer-item" ]
+            [ svg [ SvgAttributes.width "24", SvgAttributes.height "24", viewBox "0 0 24 24" ]
+                [ Svg.path [ d "M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z", fill "currentColor" ] []
+                ]
+            , div [] [ text "Add a Card" ]
+            ]
+        ]
+
+
+viewAddCard : Model -> CardList -> Html Msg
+viewAddCard model cardList =
+    div [ class "field" ]
+        [ div [ class "control card-content" ]
+            [ input
+                [ class "input"
+                , type_ "text"
+                , placeholder "Add a Card"
+                , value model.typingCardTitle
+                , Events.onInput ChangeCardTitle
+                ]
+                []
+            ]
+        , div [ class "card-content" ] [ input [ class "button is-small", style "background-color" "#5aac44", style "color" "#FFF", type_ "submit", value "Add Card", Events.onClick (AddCard cardList.id) ] [] ]
+        ]
 
 
 listInputForm : Model -> Html Msg

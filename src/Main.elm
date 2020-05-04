@@ -417,7 +417,7 @@ viewCardList model cardList =
                             ]
                             []
                         ]
-                    , div [ class "card-content" ] [ input [ class "button is-small", type_ "submit", value "カードを追加", Events.onClick (AddCard cardList.id) ] [] ]
+                    , div [ class "card-content" ] [ input [ class "button is-small", style "background-color" "#5aac44", style "color" "#FFF", type_ "submit", value "Add Card", Events.onClick (AddCard cardList.id) ] [] ]
                     ]
                 ]
             ]

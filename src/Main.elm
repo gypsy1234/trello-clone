@@ -411,7 +411,7 @@ viewCardList model cardList =
                         [ input
                             [ class "input"
                             , type_ "text"
-                            , placeholder "カードのタイトルを入力してください"
+                            , placeholder "Add a Card"
                             , value model.typingCardTitle
                             , Events.onInput ChangeCardTitle
                             ]
@@ -435,12 +435,12 @@ listInputForm model =
         [ input
             [ class "input"
             , type_ "text"
-            , placeholder "リストのタイトルを入力してください"
+            , placeholder "Enter a title for this card..."
             , value model.typingListTitle
             , Events.onInput ChangeListTitle
             ]
             []
-        , input [ class "button is-small", type_ "submit", value "リストを追加", Events.onClick AddList ] []
+        , input [ class "button is-small", type_ "submit", value "Add another list", Events.onClick AddList ] []
         ]
 
 

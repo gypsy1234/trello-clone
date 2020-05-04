@@ -383,6 +383,7 @@ cardsDecoder =
 
 -- VIEW
 
+
 view : Model -> Html Msg
 view model =
     div []
@@ -397,7 +398,7 @@ viewCardList : Model -> CardList -> Html Msg
 viewCardList model cardList =
     div [ class "column is-one-fifth" ]
         [ div []
-            [ div [ class "card" ]
+            [ div [ class "card", style "background-color" "#ebecf0" ]
                 [ div [ class "card-header" ] [ p [ class "card-header-title" ] [ text cardList.title.value ] ]
                 , div []
                     (List.map (\list -> viewCard list) <|
@@ -416,7 +417,7 @@ viewCardList model cardList =
                             ]
                             []
                         ]
-                    , div [class "card-content"] [ input [ class "button is-small", type_ "submit", value "カードを追加", Events.onClick (AddCard cardList.id) ] [] ]
+                    , div [ class "card-content" ] [ input [ class "button is-small", type_ "submit", value "カードを追加", Events.onClick (AddCard cardList.id) ] [] ]
                     ]
                 ]
             ]
@@ -425,12 +426,12 @@ viewCardList model cardList =
 
 viewCard : Card -> Html msg
 viewCard card =
-    div [ class "card-content" ] [ text card.title.value ]
+    div [ class "card-content"] [ text card.title.value ]
 
 
 listInputForm : Model -> Html Msg
 listInputForm model =
-    div [ class "column" ]
+    div [ class "column is-one-fifth" ]
         [ input
             [ class "input"
             , type_ "text"

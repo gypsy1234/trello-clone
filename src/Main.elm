@@ -386,7 +386,7 @@ cardsDecoder =
 
 view : Model -> Html Msg
 view model =
-    div []
+    div [ class "container is-fluid", style "overflow" "auto", style "height" "100vh", style "width" "100vw" ]
         [ div [ class "columns" ] <|
             Array.toList <|
                 Array.push (listInputForm model) <|

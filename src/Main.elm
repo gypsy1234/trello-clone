@@ -410,8 +410,8 @@ viewCardList : Model -> CardList -> Html Msg
 viewCardList model cardList =
     div [ class "column is-one-fifth" ]
         [ div []
-            [ div [ class "card", style "background-color" "#ebecf0" ]
-                [ div [ class "card-header" ] [ p [ class "card-header-title" ] [ text cardList.title.value ] ]
+            [ div [ class "panel", style "background-color" "#ebecf0" ]
+                [ div [ class "panel-heading" ] [ p [] [ text cardList.title.value ] ]
                 , div []
                     (List.map (\list -> viewCard list) <|
                         Array.toList <|
@@ -435,25 +435,31 @@ viewCardList model cardList =
 
 viewCard : Card -> Html msg
 viewCard card =
-    div [ class "card-content" ] [ text card.title.value ]
+    a [ class "panel-block is-active", draggable "true" ] [ span [] [ text card.title.value ] ]
 
 
 viewListFooter : CardList -> Html Msg
 viewListFooter cardList =
-    div [ class "card-footer button", Events.onClick <| OnClickAddCard cardList.id ]
-        [ div [ class "card-footer-item" ]
-            [ svg [ SvgAttributes.width "24", SvgAttributes.height "24", viewBox "0 0 24 24" ]
-                [ Svg.path [ d "M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z", fill "currentColor" ] []
+    div [ class "panel-block" ]
+        [ div [ class "control" ]
+            [ div [ class "button", Events.onClick <| OnClickAddCard cardList.id ]
+                [ span []
+                    [ svg [ SvgAttributes.width "15", SvgAttributes.height "15", viewBox "0 0 18 18" ]
+                        [ Svg.path [ d "M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z", fill "currentColor" ] []
+                        ]
+                    ]
+                    , span [] [ text "Add a Card" ]
                 ]
-            , div [] [ text "Add a Card" ]
             ]
         ]
+
+
 
 
 viewAddCard : Model -> CardList -> Html Msg
 viewAddCard model cardList =
     div [ class "field" ]
-        [ div [ class "control card-content" ]
+        [ div [ class "control" ]
             [ input
                 [ class "input"
                 , type_ "text"
@@ -463,7 +469,7 @@ viewAddCard model cardList =
                 ]
                 []
             ]
-        , div [ class "card-content" ] [ input [ class "button is-small", style "background-color" "#5aac44", style "color" "#FFF", type_ "submit", value "Add Card", Events.onClick (AddCard cardList.id) ] [] ]
+        , div [ class "control" ] [ input [ class "button is-small", style "background-color" "#5aac44", style "color" "#FFF", type_ "submit", value "Add Card", Events.onClick (AddCard cardList.id) ] [] ]
         ]
 
 
